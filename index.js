@@ -1,49 +1,41 @@
-const express = require('express');
-const { Client, GatewayIntentBits } = require('discord.js');
+// Gestion des erreurs non gérées pour éviter les crashs
+process.on('unhandledRejection', e => console.error('Erreur non gérée :', e));
+
+const express = require("express");
+const { Client, GatewayIntentBits, Partials } = require("discord.js");
+require("dotenv").config(); // pour lire .env (le token)
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
-
-// Serveur web minimal pour Render
-app.get('/', (req, res) => {
-  res.send('Bot en ligne');
-});
-app.listen(PORT, () => {
-  console.log(`Serveur web lancé sur le port ${PORT}`);
-});
-
-// Gestion des erreurs non gérées
-process.on('unhandledRejection', e => console.error('Erreur non gérée :', e));
+app.get("/", (req, res) => res.send("Bot is alive"));
+app.listen(PORT, () => console.log(`✅ Serveur web lancé sur le port ${PORT}`));
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-  ]
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions
+  ],
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
-const TOKEN = process.env.TOKEN;
+const CHANNEL_ID = "1378448023625007287";
 
-const pooWords = ['merde', 'chier', 'caca'];
-const eggplantWords = ['pipi', 'bite', 'queue', 'paf', 'paff'];
-
-client.once('ready', () => {
-  console.log(`Bot connecté en tant que ${client.user.tag}`);
+client.once("ready", () => {
+  console.log(`🤖 Connecté en tant que ${client.user.tag}`);
 });
 
-client.on('messageCreate', message => {
-  if (message.author.bot) return;
-
-  const content = message.content.toLowerCase();
-
-  if (pooWords.some(word => content.includes(word))) {
-    message.react('💩').catch(console.error);
-  }
-
-  if (eggplantWords.some(word => content.includes(word))) {
-    message.react('🍆').catch(console.error);
+client.on("messageCreate", async (message) => {
+  if (message.channel.id === CHANNEL_ID && !message.author.bot) {
+    try {
+      await message.react("✅");
+      await message.react("❌");
+    } catch (err) {
+      console.error("Erreur lors des réactions :", err);
+    }
   }
 });
 
-client.login(TOKEN);
+client.login(process.env.TOKEN);
