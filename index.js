@@ -1,3 +1,4 @@
+process.on('unhandledRejection', e => console.error(e));
 const express = require("express");
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 require("dotenv").config(); // pour lire .env (le token)
