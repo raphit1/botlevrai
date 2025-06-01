@@ -1,37 +1,49 @@
-process.on('unhandledRejection', e => console.error(e));
-const express = require("express");
-const { Client, GatewayIntentBits, Partials } = require("discord.js");
-require("dotenv").config(); // pour lire .env (le token)
+const express = require('express');
+const { Client, GatewayIntentBits } = require('discord.js');
 
 const app = express();
-app.get("/", (req, res) => res.send("Bot is alive"));
-app.listen(3000, () => console.log("✅ Serveur web lancé"));
+const PORT = process.env.PORT || 3000;
+
+// Serveur web minimal pour Render
+app.get('/', (req, res) => {
+  res.send('Bot en ligne');
+});
+app.listen(PORT, () => {
+  console.log(`Serveur web lancé sur le port ${PORT}`);
+});
+
+// Gestion des erreurs non gérées
+process.on('unhandledRejection', e => console.error('Erreur non gérée :', e));
 
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessageReactions
-  ],
-  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
+    GatewayIntentBits.MessageContent
+  ]
 });
 
-const CHANNEL_ID = "1378448023625007287";
+const TOKEN = process.env.TOKEN;
 
-client.once("ready", () => {
-  console.log(`🤖 Connecté en tant que ${client.user.tag}`);
+const pooWords = ['merde', 'chier', 'caca'];
+const eggplantWords = ['pipi', 'bite', 'queue', 'paf', 'paff'];
+
+client.once('ready', () => {
+  console.log(`Bot connecté en tant que ${client.user.tag}`);
 });
 
-client.on("messageCreate", async (message) => {
-  if (message.channel.id === CHANNEL_ID && !message.author.bot) {
-    try {
-      await message.react("✅");
-      await message.react("❌");
-    } catch (err) {
-      console.error("Erreur lors des réactions :", err);
-    }
+client.on('messageCreate', message => {
+  if (message.author.bot) return;
+
+  const content = message.content.toLowerCase();
+
+  if (pooWords.some(word => content.includes(word))) {
+    message.react('💩').catch(console.error);
+  }
+
+  if (eggplantWords.some(word => content.includes(word))) {
+    message.react('🍆').catch(console.error);
   }
 });
 
-client.login(process.env.TOKEN);
+client.login(TOKEN);
