@@ -39,3 +39,7 @@ client.on("messageCreate", async (message) => {
 });
 
 client.login(process.env.TOKEN);
+// Anti-sleep ping toutes les 5 minutes
+setInterval(() => {
+  require("http").get("https://dashboard.render.com/web/srv-d0trarqdbo4c73a0hc80/deploys/dep-d0u3himmcj7s7399vhng");
+}, 5 * 60 * 1000); // 5 minutes
